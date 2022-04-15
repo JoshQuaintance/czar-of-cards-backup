@@ -21,6 +21,7 @@
         ]
     },
     "devDependencies": {
+        "@iconify/svelte": "^2.2.1",
         "@sveltejs/kit": "next",
         "@typescript-eslint/eslint-plugin": "^5.10.0",
         "@typescript-eslint/parser": "^5.10.0",
@@ -28,6 +29,7 @@
         "eslint": "^8.7.0",
         "eslint-config-prettier": "^8.3.0",
         "eslint-plugin-svelte3": "^3.4.0",
+        "flowbite-svelte": "^0.13.8",
         "husky": "^7.0.0",
         "lint-staged": "^12.2.1",
         "postcss": "^8.4.5",

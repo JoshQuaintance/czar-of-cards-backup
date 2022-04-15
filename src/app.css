@@ -1,3 +1,5 @@
+@import url('https://rsms.me/inter/inter.css');
+
 /* Write your global styles here, in PostCSS syntax */
 @tailwind base;
 @tailwind components;
@@ -6,8 +8,38 @@
 * {
     padding: 0;
     margin: 0;
+    box-sizing: border-box;
+    transition: 0.2s all cubic-bezier(0.39, 0.575, 0.565, 1);
+    color: black;
+}
+
+h1,
+p {
+    @apply drop-shadow-lg;
 }
 
 body {
     @apply dark:bg-gray-900;
+}
+
+a.fancy-link {
+    @apply relative;
+    color: rgba(0, 47, 255, 0.9);
+}
+a.fancy-link::after {
+    @apply absolute;
+    @apply opacity-[65];
+    width: 2%;
+    height: 0%;
+    left: 0;
+    bottom: 2px;
+    z-index: -1;
+    transition: width 0.3s ease, height 0.3s ease-in-out 0.3s;
+    background-color: rgba(0, 174, 255, 0.534);
+    content: '';
+}
+a.fancy-link:hover::after {
+    height: 85%;
+    width: 100%;
+    transition: width 0.3s ease 0.3s, height 0.3s ease-in-out;
 }

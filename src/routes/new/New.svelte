@@ -1,17 +1,54 @@
 <script lang="ts">
+    import { Button } from 'flowbite-svelte';
+    import { v4 as uuid } from 'uuid';
+
     import BackButton from '$components/BackButton.svelte';
     import metadata from '$data/cards/cah-metadata-cards.json';
-    import { Button } from 'flowbite-svelte';
+    import { cardSet } from '$utils/stores';
 
     let hidePassword = false;
-    let cardSetWindowOpen = true;
+    let cardSetWindowOpen = false;
     let fields: HTMLFieldSetElement;
-    let checkboxes = [];
-    let checkedBoxes = [];
+    let checkboxes: HTMLInputElement[] = [];
+    let using = [];
+    let username;
+    let password;
+    let roomId;
+    let idleTimer = 35;
+    let winningScore = 8;
+    let playerLimit = 10;
 
     function selectAll() {
         checkboxes.forEach((el: HTMLInputElement) => {
             el.checked = true;
+        });
+    }
+
+    function setCardSet() {
+        for (let i = 0; i < checkboxes.length; i++) if (checkboxes[i].checked) using.push(i);
+
+        cardSet.set(using);
+
+        cardSetWindowOpen = false;
+
+        using = [];
+    }
+
+    async function openLobby() {
+        roomId = uuid().slice(0, 6).toUpperCase();
+
+        let payload = {
+            host: username,
+            password: password.value,
+            roomId,
+            idleTimer,
+            winningScore,
+            playerLimit
+        };
+
+        await fetch('/new', {
+            method: 'POST',
+            body: JSON.stringify(payload)
         });
     }
 </script>
@@ -26,7 +63,7 @@
     <div id="title-wrapper">
         <h2 class="text-lg sm:text-md md:text-xl font-semibold font-inter">Game Options</h2>
 
-        <div id="option-wrapper" class="border-2 rounded-md border-slate-500 p-4 grid grid-cols-2 h-full">
+        <div id="option-wrapper" class="border-b-2 border-slate-500 p-4 grid grid-cols-2 h-full">
             <div class="columns-1 flex flex-col justify-around items-start">
                 <!-- Score to win -->
                 <div class="mb-4">
@@ -34,22 +71,23 @@
                         >Score to win</label>
                     <input
                         type="number"
+                        bind:value={winningScore}
                         id="score-to-win"
                         class="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 dark:shadow-sm-light"
                         placeholder="8"
                         required
                         min="4"
-                        max="45"
-                        value="8" />
+                        max="45" />
                 </div>
 
                 <!-- Idle timer  -->
                 <div class="mb-4">
-                    <label for="score-to-win" class="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-300"
+                    <label for="idle-timer" class="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-300"
                         >Idle timer <small>(in seconds)</small></label>
                     <input
                         type="number"
-                        id="score-to-win"
+                        bind:value={idleTimer}
+                        id="idle-timer"
                         class="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 dark:shadow-sm-light"
                         placeholder="35"
                         min="25"
@@ -75,14 +113,14 @@
                     <label for="player-limit" class="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-300"
                         >Player limit</label>
                     <input
+                        bind:value={playerLimit}
                         type="number"
                         id="player-limit"
                         class="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 dark:shadow-sm-light"
                         placeholder="10"
                         required
                         min="3"
-                        max="15"
-                        value="10" />
+                        max="15" />
                 </div>
 
                 <!-- Game Password -->
@@ -91,6 +129,7 @@
                         >Game Password</label>
                     <input
                         type={hidePassword ? 'password' : 'text'}
+                        bind:this={password}
                         id="player-limit"
                         class="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 dark:shadow-sm-light" />
 
@@ -100,6 +139,49 @@
                     </span>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <div id="title-wrapper2" class="mt-4 grid grid-cols-2">
+        <div id="match-info" class="columns-1 ">
+            <h2 class="text-lg sm:text-md md:text-xl font-semibold font-inter mb-4">Match</h2>
+
+            <div class="grid grid-cols-2">
+                <form class="flex flex-col justify-between items-start h-full" on:submit|preventDefault={openLobby}>
+                    <span id="username" class="mb-6">
+                        <label for="username">Username</label>
+                        <input
+                            type="text"
+                            bind:value={username}
+                            id="username"
+                            class="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 dark:shadow-sm-light"
+                            required />
+                        <small><i>*This is your username</i></small>
+                    </span>
+
+                    <button
+                        type="submit"
+                        class="text-white bg-gray-800 hover:bg-gray-900 focus:ring-4 focus:ring-gray-300 font-medium rounded-lg text-base py-3 px-6 text-center mr-2 mb-2 dark:bg-gray-800 dark:hover:bg-gray-700 dark:focus:ring-gray-800 dark:border-gray-700"
+                        >Open Lobby</button>
+                </form>
+
+                <div>
+                    <label for="room-id">Room Id</label>
+                    <input
+                        type="text"
+                        disabled
+                        bind:value={roomId}
+                        id="room-id"
+                        class="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 text-lg rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-1.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 dark:shadow-sm-light text-center tracking-[.5em] "
+                        required
+                        placeholder="XXXXX" />
+                    <small><i>*Open the lobby to generate a room id</i></small>
+                </div>
+            </div>
+        </div>
+
+        <div id="match-info" class="columns-2">
+            <h2 class="text-lg sm:text-md md:text-xl font-semibold font-inter">Lobby</h2>
         </div>
     </div>
 </div>
@@ -112,18 +194,13 @@
     </span>
 
     <span class="flex flex-row justify-start items-center ">
-        <input type="checkbox" id="select-all" on:click={selectAll} /><label for="select-all" class="ml-1"
-            >Select All</label>
+        <Button btnColor="dark" on:click={selectAll} name="Select All" textSize="text-sm" />
     </span>
     <div id="sets-container" class="relative w-full mb-8 p-4 border-2 border-slate-400 rounded-md">
         <fieldset bind:this={fields} class="grid grid-cols-3">
             {#each metadata as { name, id, official }}
                 <div class="flex flex-row justify-start items-center ">
-                    <input
-                        type="checkbox"
-                        id="{name}-checkbox"
-                        bind:this={checkboxes[id]}
-                        bind:checked={checkedBoxes[id]} />
+                    <input type="checkbox" id="{name}-checkbox" data-card-id={id} bind:this={checkboxes[id]} />
                     <label for="{name}-checkbox" class="align-baseline ml-1">{name}</label>
                 </div>
             {/each}
@@ -131,6 +208,6 @@
     </div>
 
     <span class="w-full flex justify-center items-center">
-        <Button btnColor="green-outline" name="Done" textSize="text-xl" />
+        <Button btnColor="green-outline" name="Done" textSize="text-xl" on:click={setCardSet} />
     </span>
 </div>

@@ -5,18 +5,17 @@
     import BackButton from '$components/BackButton.svelte';
     import metadata from '$data/cards/cah-metadata-cards.json';
     import { cardSet } from '$utils/stores';
+    import { socket } from '$utils/realtime';
 
-    let hidePassword = false;
-    let cardSetWindowOpen = false;
-    let fields: HTMLFieldSetElement;
-    let checkboxes: HTMLInputElement[] = [];
-    let using = [];
-    let username;
-    let password;
-    let roomId;
-    let idleTimer = 35;
-    let winningScore = 8;
-    let playerLimit = 10;
+    let hidePassword = false,
+        cardSetWindowOpen = false;
+    let pwdInput: HTMLInputElement,
+        checkboxes: HTMLInputElement[] = [],
+        using = [];
+    let idleTimer = 35,
+        winningScore = 8,
+        playerLimit = 10;
+    let username: string, roomId: string;
 
     function selectAll() {
         checkboxes.forEach((el: HTMLInputElement) => {
@@ -39,17 +38,19 @@
 
         let payload = {
             host: username,
-            password: password.value,
+            password: pwdInput.value,
             roomId,
             idleTimer,
             winningScore,
-            playerLimit
+            playerLimit,
+            cardSet: $cardSet
         };
 
-        await fetch('/new', {
-            method: 'POST',
-            body: JSON.stringify(payload)
+        socket.on('new-room-response', (data) => {
+            return;
         });
+
+        socket.emit('create-new-room', payload);
     }
 </script>
 
@@ -129,7 +130,7 @@
                         >Game Password</label>
                     <input
                         type={hidePassword ? 'password' : 'text'}
-                        bind:this={password}
+                        bind:this={pwdInput}
                         id="player-limit"
                         class="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 dark:shadow-sm-light" />
 
@@ -197,7 +198,7 @@
         <Button btnColor="dark" on:click={selectAll} name="Select All" textSize="text-sm" />
     </span>
     <div id="sets-container" class="relative w-full mb-8 p-4 border-2 border-slate-400 rounded-md">
-        <fieldset bind:this={fields} class="grid grid-cols-3">
+        <fieldset class="grid grid-cols-3">
             {#each metadata as { name, id, official }}
                 <div class="flex flex-row justify-start items-center ">
                     <input type="checkbox" id="{name}-checkbox" data-card-id={id} bind:this={checkboxes[id]} />

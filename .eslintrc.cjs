@@ -26,7 +26,7 @@ module.exports = {
     plugins: ['svelte3', '@typescript-eslint'],
     rules: {
         'no-console': [
-            'error',
+            'warn',
             {
                 allow: ['warn', 'error']
             }

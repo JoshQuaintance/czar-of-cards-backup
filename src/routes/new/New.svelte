@@ -5,7 +5,10 @@
     import BackButton from '$components/BackButton.svelte';
     import metadata from '$data/cards/cah-metadata-cards.json';
     import { cardSet } from '$utils/stores';
-    import { socket } from '$utils/realtime';
+    import { getGameSocket, getNewRoomSocket } from '$utils/realtime';
+    import type { Socket } from 'socket.io-client';
+
+    const newRoomSocket = getNewRoomSocket();
 
     let hidePassword = false,
         cardSetWindowOpen = false;
@@ -16,6 +19,10 @@
         winningScore = 8,
         playerLimit = 10;
     let username: string, roomId: string;
+
+    let usersInRoom = [];
+    let hostPassword: string = null;
+    let gameSocket: Socket = null;
 
     function selectAll() {
         checkboxes.forEach((el: HTMLInputElement) => {
@@ -33,6 +40,15 @@
         using = [];
     }
 
+    function initGameSocket() {
+        gameSocket.emit('identification', { username, hostPassword });
+
+        gameSocket.once('init-player-list', (playerList) => {
+            console.log(playerList);
+            usersInRoom = JSON.parse(playerList);
+        });
+    }
+
     async function openLobby() {
         roomId = uuid().slice(0, 6).toUpperCase();
 
@@ -46,11 +62,20 @@
             cardSet: $cardSet
         };
 
-        socket.on('new-room-response', (data) => {
-            return;
+        newRoomSocket.once('room-created', (data) => {
+            if (data.created == true) {
+                newRoomSocket.disconnect();
+
+                hostPassword = data.hostPassword;
+                gameSocket = getGameSocket(data.port);
+
+                initGameSocket();
+
+                return;
+            } else alert('Room Creation Failed');
         });
 
-        socket.emit('create-new-room', payload);
+        newRoomSocket.emit('create-new-room', payload);
     }
 </script>
 
@@ -183,6 +208,10 @@
 
         <div id="match-info" class="columns-2">
             <h2 class="text-lg sm:text-md md:text-xl font-semibold font-inter">Lobby</h2>
+
+            {#each usersInRoom as player}
+                <p>{player}</p>
+            {/each}
         </div>
     </div>
 </div>

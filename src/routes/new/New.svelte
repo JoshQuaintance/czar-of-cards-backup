@@ -207,6 +207,8 @@
                             id="room-id"
                             class="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 text-lg rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-1.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 dark:shadow-sm-light text-center tracking-[.5em] "
                             required
+                            min="5"
+                            max="5"
                             placeholder="XXXXX" />
                         <small><i>*Open the lobby to generate a room id</i></small>
                     </div>

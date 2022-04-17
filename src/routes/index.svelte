@@ -31,7 +31,11 @@
 
             <div class="buttons flex items-start justify-start">
                 <Button btnColor="blue-outline" name="Create a Game" textSize="text-base" on:click={createGame} />
-                <Button btnColor="blue-outline" name="Join a Game" textSize="text-base" on:click={() => goto('/new')} />
+                <Button
+                    btnColor="blue-outline"
+                    name="Join a Game"
+                    textSize="text-base"
+                    on:click={() => goto('/join')} />
             </div>
         </div>
         <!-- container -->

@@ -4,7 +4,9 @@ const newRoomIO = ioClient((import.meta.env['VITE_SECRET_SERVER_URI'] as string)
     upgrade: false,
     transports: ['websocket']
 });
+
 let gameSocket: Socket | null = null;
+let roomFinder: Socket = null;
 
 export function getNewRoomSocket(): Socket {
     newRoomIO.connect();
@@ -23,4 +25,17 @@ export function getGameSocket(port: number, hostPassword: string = null) {
     gameSocket.connect();
 
     return gameSocket;
+}
+
+export function getRoomFinderSocket(): Socket {
+    if (roomFinder) return roomFinder;
+
+    roomFinder = ioClient((import.meta.env['VITE_SECRET_SERVER_URI'] as string) + ':3031', {
+        upgrade: false,
+        transports: ['websocket']
+    });
+
+    roomFinder.connect();
+
+    return roomFinder;
 }

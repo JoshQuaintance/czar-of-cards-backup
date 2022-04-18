@@ -20,7 +20,7 @@
         playerLimit = 10;
     let username: string, roomId: string;
 
-    let usersInRoom = [];
+    $: usersInRoom = [];
     let hostPassword: string = null;
     let gameSocket: Socket = null;
 
@@ -43,9 +43,9 @@
     function initGameSocket() {
         gameSocket.emit('identification', { username, hostPassword });
 
-        gameSocket.once('init-player-list', (playerList) => {
-            console.log(playerList);
-            usersInRoom = [...usersInRoom, ...JSON.parse(playerList)];
+        gameSocket.on('player-list-update', (playerList) => {
+            console.log('playerList');
+            usersInRoom = JSON.parse(playerList);
         });
     }
 

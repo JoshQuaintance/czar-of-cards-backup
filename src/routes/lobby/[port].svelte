@@ -12,14 +12,15 @@
     import { getGameSocket } from '$utils/realtime';
 
     export let port;
-    let playerList = [];
+    $: playerList = [];
 
     const gameSocket = getGameSocket(port);
 
     gameSocket.emit('get-player-list');
 
     gameSocket.on('player-list-update', (data) => {
-        playerList = [...playerList, ...JSON.parse(data)];
+        console.log(data);
+        playerList = JSON.parse(data);
     });
 </script>
 
